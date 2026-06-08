@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, BarChart3, Sprout, Wallet } from 'lucide-react'
 
@@ -12,7 +13,8 @@ export function HeroSection() {
       </div>
 
       <div className="mx-auto max-w-7xl">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+          <div className="mx-auto max-w-3xl lg:mx-0">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
             <Sprout className="h-4 w-4" />
             Smart Farming Solutions
@@ -57,6 +59,21 @@ export function HeroSection() {
               <Wallet className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold text-foreground">30%</span>
               <span className="text-sm text-muted-foreground">Cost Reduction</span>
+            </div>
+          </div>
+          </div>
+
+          {/* Hero Image */}
+          <div className="relative hidden lg:flex lg:items-center lg:justify-end">
+            <div className="relative h-[500px] w-full overflow-hidden rounded-2xl shadow-2xl">
+              <Image
+                src="/images/hero-farm.png"
+                alt="Lush green rice field with farmers"
+                fill
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
           </div>
         </div>

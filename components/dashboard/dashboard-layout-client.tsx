@@ -106,7 +106,7 @@ export function DashboardLayoutClient({ children, user }: DashboardLayoutClientP
     <SidebarProvider>
       <Sidebar className="border-r border-border/50">
         <SidebarHeader className="border-b border-border/50 p-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <Sprout className="h-5 w-5 text-primary-foreground" />
             </div>

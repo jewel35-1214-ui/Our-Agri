@@ -3,85 +3,81 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 
-export async function createExpense(data: any) {
+export async function createIncome(data: any) {
   const supabase = await createClient()
-  
-  // Fetch user to satisfy Supabase RLS policies
   const { data: { user } } = await supabase.auth.getUser()
+
   if (!user) {
     return { success: false, error: "Not authenticated" }
   }
 
-  const { error } = await supabase.from("expenses").insert([
+  const { error } = await supabase.from("income").insert([
     {
       user_id: user.id,
-      // If "none" was selected in the UI, convert it back to a database null
-      crop_id: data.crop_id === "none" || !data.crop_id ? null : data.crop_id,
-      category: data.category,
+      crop_id: data.crop_id || null,
+      source: data.source,
       amount: parseFloat(data.amount),
       description: data.description || null,
-      expense_date: data.expense_date,
+      income_date: data.income_date,
+      currency: "PHP",
     },
   ])
 
   if (error) {
-    console.error("Create Expense Error:", error)
     return { success: false, error: error.message }
   }
 
-  revalidatePath("/dashboard/expenses")
+  revalidatePath("/dashboard/income")
   return { success: true }
 }
 
-export async function updateExpense(id: string, data: any) {
+export async function updateIncome(id: string, data: any) {
   const supabase = await createClient()
-  
   const { data: { user } } = await supabase.auth.getUser()
+
   if (!user) {
     return { success: false, error: "Not authenticated" }
   }
 
   const { error } = await supabase
-    .from("expenses")
+    .from("income")
     .update({
-      crop_id: data.crop_id === "none" || !data.crop_id ? null : data.crop_id,
-      category: data.category,
+      crop_id: data.crop_id || null,
+      source: data.source,
       amount: parseFloat(data.amount),
       description: data.description || null,
-      expense_date: data.expense_date,
+      income_date: data.income_date,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("user_id", user.id) // Protect updates across users
+    .eq("user_id", user.id)
 
   if (error) {
-    console.error("Update Expense Error:", error)
     return { success: false, error: error.message }
   }
 
-  revalidatePath("/dashboard/expenses")
+  revalidatePath("/dashboard/income")
   return { success: true }
 }
 
-export async function deleteExpense(id: string) {
+export async function deleteIncome(id: string) {
   const supabase = await createClient()
-  
   const { data: { user } } = await supabase.auth.getUser()
+
   if (!user) {
     return { success: false, error: "Not authenticated" }
   }
 
   const { error } = await supabase
-    .from("expenses")
+    .from("income")
     .delete()
     .eq("id", id)
-    .eq("user_id", user.id) // Protect deletes across users
+    .eq("user_id", user.id)
 
   if (error) {
-    console.error("Delete Expense Error:", error)
     return { success: false, error: error.message }
   }
 
-  revalidatePath("/dashboard/expenses")
+  revalidatePath("/dashboard/income")
   return { success: true }
 }

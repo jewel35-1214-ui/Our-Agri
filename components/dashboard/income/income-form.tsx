@@ -13,16 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { createExpense, updateExpense } from "@/app/actions/expenses"
+import { createIncome, updateIncome } from "@/app/actions/income"
 import { useRouter } from "next/navigation"
 
-interface Expense {
+interface Income {
   id: string
   crop_id?: string
-  category: string
+  source: string
   description?: string
   amount: number
-  expense_date: string
+  income_date: string
 }
 
 interface Crop {
@@ -30,48 +30,46 @@ interface Crop {
   name: string
 }
 
-interface ExpenseFormProps {
-  expense?: Expense
+interface IncomeFormProps {
+  income?: Income
   crops: Crop[]
   onSuccess?: () => void
 }
 
 interface FormData {
-  category: string
+  source: string
   description: string
   amount: string
-  expense_date: string
+  income_date: string
   crop_id: string
 }
 
-const categories = [
-  { value: "seeds", label: "Seeds" },
-  { value: "fertilizer", label: "Fertilizer" },
-  { value: "pesticides", label: "Pesticides" },
-  { value: "labor", label: "Labor" },
-  { value: "equipment", label: "Equipment" },
-  { value: "irrigation", label: "Irrigation" },
-  { value: "transport", label: "Transport" },
+const incomeSources = [
+  { value: "crop_sale", label: "Crop Sale" },
+  { value: "livestock_sale", label: "Livestock Sale" },
+  { value: "equipment_rental", label: "Equipment Rental" },
+  { value: "agritourism", label: "Agritourism" },
+  { value: "subsidy", label: "Government Subsidy" },
   { value: "other", label: "Other" },
 ]
 
-export function ExpenseForm({ expense, crops, onSuccess }: ExpenseFormProps) {
+export function IncomeForm({ income, crops, onSuccess }: IncomeFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
     defaultValues: {
-      category: expense?.category || "other",
-      description: expense?.description || "",
-      amount: expense?.amount?.toString() || "",
-      expense_date: expense?.expense_date || new Date().toISOString().split("T")[0],
-      // Fallback to "none" instead of "" to prevent Radix UI crashes
-      crop_id: expense?.crop_id || "none",
+      source: income?.source || "crop_sale",
+      description: income?.description || "",
+      amount: income?.amount?.toString() || "",
+      income_date: income?.income_date || new Date().toISOString().split("T")[0],
+      // FIX: Fallback to "none" instead of "" if there's no initial crop
+      crop_id: income?.crop_id || "none",
     },
   })
 
-  const category = watch("category")
+  const source = watch("source")
   const cropId = watch("crop_id")
 
   const onSubmit = async (data: FormData) => {
@@ -79,9 +77,18 @@ export function ExpenseForm({ expense, crops, onSuccess }: ExpenseFormProps) {
     setError(null)
 
     try {
-      const result = expense
-        ? await updateExpense(expense.id, data)
-        : await createExpense(data)
+      const submitData = {
+        source: data.source,
+        description: data.description,
+        amount: data.amount,
+        income_date: data.income_date,
+        // FIX: Treat "none" as null when sending data back to Server Actions
+        crop_id: data.crop_id === "none" || !data.crop_id ? null : data.crop_id,
+      }
+
+      const result = income
+        ? await updateIncome(income.id, submitData)
+        : await createIncome(submitData)
 
       if (result?.success) {
         router.refresh()
@@ -105,15 +112,15 @@ export function ExpenseForm({ expense, crops, onSuccess }: ExpenseFormProps) {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="category">Category *</Label>
-        <Select value={category} onValueChange={(value) => setValue("category", value)}>
+        <Label htmlFor="source">Income Source *</Label>
+        <Select value={source} onValueChange={(value) => setValue("source", value)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select category" />
+            <SelectValue placeholder="Select source" />
           </SelectTrigger>
           <SelectContent>
-            {categories.map((c) => (
-              <SelectItem key={c.value} value={c.value}>
-                {c.label}
+            {incomeSources.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                {s.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -128,7 +135,7 @@ export function ExpenseForm({ expense, crops, onSuccess }: ExpenseFormProps) {
             type="number"
             step="0.01"
             min="0"
-            placeholder="e.g., 5000"
+            placeholder="e.g., 15000"
             {...register("amount", { required: "Amount is required" })}
           />
           {errors.amount && (
@@ -137,26 +144,26 @@ export function ExpenseForm({ expense, crops, onSuccess }: ExpenseFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="expense_date">Date *</Label>
+          <Label htmlFor="income_date">Date *</Label>
           <Input
-            id="expense_date"
+            id="income_date"
             type="date"
-            {...register("expense_date", { required: "Date is required" })}
+            {...register("income_date", { required: "Date is required" })}
           />
-          {errors.expense_date && (
-            <p className="text-sm text-destructive">{errors.expense_date.message}</p>
+          {errors.income_date && (
+            <p className="text-sm text-destructive">{errors.income_date.message}</p>
           )}
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="crop_id">Link to Crop (Optional)</Label>
+        <Label htmlFor="crop_id">Related Crop (Optional)</Label>
         <Select value={cropId} onValueChange={(value) => setValue("crop_id", value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select a crop" />
           </SelectTrigger>
           <SelectContent>
-            {/* Value changed from "" to "none" to solve the UI Runtime Crash */}
+            {/* FIX: Changed value from "" to "none" to stop Radix UI from crashing */}
             <SelectItem value="none">No crop linked</SelectItem>
             {crops.map((crop) => (
               <SelectItem key={crop.id} value={crop.id}>
@@ -171,7 +178,7 @@ export function ExpenseForm({ expense, crops, onSuccess }: ExpenseFormProps) {
         <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
-          placeholder="Additional details about this expense..."
+          placeholder="Additional details about this income..."
           rows={3}
           {...register("description")}
         />
@@ -179,7 +186,7 @@ export function ExpenseForm({ expense, crops, onSuccess }: ExpenseFormProps) {
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : expense ? "Update Expense" : "Add Expense"}
+          {isSubmitting ? "Saving..." : income ? "Update Income" : "Add Income"}
         </Button>
       </div>
     </form>

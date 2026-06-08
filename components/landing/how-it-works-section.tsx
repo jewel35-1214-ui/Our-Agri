@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { UserPlus, Sprout, BarChart3 } from 'lucide-react'
 
 const steps = [
@@ -37,26 +38,42 @@ export function HowItWorksSection() {
           </p>
         </div>
 
-        <div className="mt-16 grid gap-8 lg:grid-cols-3">
-          {steps.map((item, index) => (
-            <div key={item.step} className="relative">
-              {/* Connector line for desktop */}
-              {index < steps.length - 1 && (
-                <div className="absolute left-1/2 top-12 hidden h-0.5 w-full bg-border lg:block" />
-              )}
-              
-              <div className="relative flex flex-col items-center text-center">
-                <div className="relative z-10 flex h-24 w-24 items-center justify-center rounded-full border-4 border-background bg-primary shadow-lg">
-                  <item.icon className="h-10 w-10 text-primary-foreground" />
+        <div className="mt-16 grid gap-12 lg:grid-cols-2 lg:items-center">
+          <div className="grid gap-8 md:grid-cols-1">
+            {steps.map((item, index) => (
+              <div key={item.step} className="relative flex gap-6">
+                <div className="flex flex-col items-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full border-3 border-primary bg-primary/10 text-primary shadow-md">
+                    <item.icon className="h-8 w-8" />
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className="mt-2 h-12 w-0.5 bg-border" />
+                  )}
                 </div>
-                <span className="mt-4 text-sm font-bold uppercase tracking-wider text-primary">
-                  Step {item.step}
-                </span>
-                <h3 className="mt-2 text-xl font-semibold text-foreground">{item.title}</h3>
-                <p className="mt-2 max-w-xs text-muted-foreground">{item.description}</p>
+                
+                <div className="pb-8 pt-2">
+                  <span className="text-xs font-bold uppercase tracking-widest text-primary">
+                    Step {item.step}
+                  </span>
+                  <h3 className="mt-2 text-xl font-semibold text-foreground">{item.title}</h3>
+                  <p className="mt-3 text-muted-foreground">{item.description}</p>
+                </div>
               </div>
+            ))}
+          </div>
+
+          {/* Side Image */}
+          <div className="hidden lg:flex lg:items-center lg:justify-center">
+            <div className="relative h-[450px] w-full overflow-hidden rounded-2xl shadow-xl">
+              <Image
+                src="/images/hero-farm.png"
+                alt="How OurAgri works"
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30" />
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>

@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { Quote } from 'lucide-react'
 
 const testimonials = [
@@ -5,16 +6,19 @@ const testimonials = [
     quote: "OurAgri has transformed how I manage my rice paddies. The expense tracking alone has helped me identify where I was overspending.",
     author: "Maria Santos",
     role: "Rice Farmer, Nueva Ecija",
+    image: "/images/farmer-1.png",
   },
   {
     quote: "The fertilizer recommendations are spot-on. My yields have increased by 20% since I started following the app suggestions.",
     author: "Juan dela Cruz",
     role: "Vegetable Farmer, Benguet",
+    image: "/images/farmer-2.png",
   },
   {
     quote: "Finally, a farming app that understands Filipino farmers. Simple to use and incredibly helpful for tracking my coconut plantation.",
     author: "Pedro Reyes",
     role: "Coconut Farmer, Quezon",
+    image: "/images/farmer-3.png",
   },
 ]
 
@@ -35,7 +39,7 @@ export function TestimonialsSection() {
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="relative rounded-2xl border border-border bg-card p-8"
+              className="relative overflow-hidden rounded-2xl border border-border bg-card p-8 transition-all hover:shadow-lg hover:border-primary/30"
             >
               <Quote className="absolute right-6 top-6 h-10 w-10 text-primary/10" />
               <blockquote className="relative">
@@ -43,9 +47,14 @@ export function TestimonialsSection() {
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
               </blockquote>
-              <div className="mt-6 flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
-                  {testimonial.author.split(' ').map(n => n[0]).join('')}
+              <div className="mt-8 flex items-center gap-4">
+                <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-full border-2 border-primary/20">
+                  <Image
+                    src={testimonial.image}
+                    alt={testimonial.author}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">{testimonial.author}</p>
