@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
-import { Trash2, Ban, Shield, Check, X, AlertCircle } from 'lucide-react'
+import { Trash2, Ban, Shield, Check, X, AlertCircle, LogOut } from 'lucide-react'
 
 interface User {
   id: string
@@ -100,6 +100,22 @@ export default function AdminUsersPage() {
     setShowDialog(true)
   }
 
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      })
+
+      if (response.ok) {
+        router.push('/auth/login')
+      } else {
+        console.error('[v0] Logout failed')
+      }
+    } catch (error) {
+      console.error('[v0] Error during logout:', error)
+    }
+  }
+
   const filteredUsers = users.filter((user) =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()),
   )
@@ -135,12 +151,26 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="min-h-svh bg-background p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">User Management</h1>
-          <p className="text-muted-foreground">Manage all users, ban, delete, and assign admin roles</p>
+    <div className="min-h-svh bg-background">
+      <header className="border-b bg-card">
+        <div className="max-w-6xl mx-auto p-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">User Management</h1>
+            <p className="text-muted-foreground mt-1">Manage all users, ban, delete, and assign admin roles</p>
+          </div>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="gap-2"
+          >
+            <LogOut size={16} />
+            Logout
+          </Button>
         </div>
+      </header>
+
+      <div className="p-8">
+      <div className="max-w-6xl mx-auto">
 
         <div className="mb-6">
           <Input
@@ -370,6 +400,7 @@ export default function AdminUsersPage() {
           </div>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </div>
   )
 }
