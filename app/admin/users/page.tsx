@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
-import { Trash2, Ban, Shield, Check, X } from 'lucide-react'
+import { Trash2, Ban, Shield, Check, X, AlertCircle } from 'lucide-react'
 
 interface User {
   id: string
@@ -27,8 +28,10 @@ interface User {
 }
 
 export default function AdminUsersPage() {
+  const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [action, setAction] = useState<'ban' | 'delete' | 'promote' | 'demote' | null>(null)
@@ -41,12 +44,32 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true)
+      setError(null)
       const response = await fetch('/api/admin/users')
-      if (!response.ok) throw new Error('Failed to fetch users')
+      
+      if (response.status === 401) {
+        setError('You are not authenticated. Please log in.')
+        router.push('/auth/login')
+        return
+      }
+      
+      if (response.status === 403) {
+        setError('You do not have permission to access this page. Admin access required.')
+        router.push('/dashboard')
+        return
+      }
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to fetch users')
+      }
+      
       const data = await response.json()
       setUsers(data.users || [])
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred'
       console.error('[v0] Error fetching users:', error)
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -89,6 +112,24 @@ export default function AdminUsersPage() {
     return (
       <div className="flex items-center justify-center min-h-svh">
         <p className="text-muted-foreground">Loading users...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-svh bg-background p-8">
+        <div className="max-w-6xl mx-auto">
+          <Card className="border-destructive/20 bg-destructive/5">
+            <CardContent className="pt-6 flex gap-4">
+              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-destructive">Error</h3>
+                <p className="text-sm text-destructive/80 mt-1">{error}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
