@@ -52,17 +52,37 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // if the user is logged in and trying to access auth pages, redirect to dashboard
-  if (
-    (request.nextUrl.pathname.startsWith('/auth/login') ||
-      request.nextUrl.pathname.startsWith('/auth/sign-up')) &&
-    user
-  ) {
+ // If the user is logged in and trying to access auth pages,
+// redirect based on their role.
+if (
+  (request.nextUrl.pathname.startsWith('/auth/login') ||
+    request.nextUrl.pathname.startsWith('/auth/sign-up')) &&
+  user
+) {
+  const url = request.nextUrl.clone()
+
+  if (user.user_metadata?.role === 'admin') {
+    url.pathname = '/admin/users'
+  } else {
+    url.pathname = '/dashboard'
+  }
+
+  return NextResponse.redirect(url)
+}
+// Protect admin routes
+if (request.nextUrl.pathname.startsWith('/admin')) {
+  if (!user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/login'
+    return NextResponse.redirect(url)
+  }
+
+  if (user.user_metadata?.role !== 'admin') {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
-
+}
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:

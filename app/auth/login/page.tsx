@@ -24,18 +24,28 @@ export default function LoginPage() {
 
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+  email,
+  password,
+})
 
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
-    }
+if (error) {
+  setError(error.message)
+  setLoading(false)
+  return
+}
 
-    router.push('/dashboard')
-    router.refresh()
+// Get the logged-in user
+const {
+  data: { user },
+} = await supabase.auth.getUser()
+
+if (user?.user_metadata?.role === 'admin') {
+  router.replace('/admin/users')
+} else {
+  router.replace('/dashboard')
+}
+
+router.refresh()
   }
 
   return (
@@ -72,7 +82,7 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 pb-4">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
